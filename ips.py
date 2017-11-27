@@ -5,8 +5,9 @@ import struct
 import sys
 import os
 import gzip
+import asyncio
 
-VERSION      = '0.1'
+VERSION      = '1.0'
 
 FILE_LIMIT   = 0x1000000 #16MB
 RECORD_LIMIT = 0x10000
@@ -15,7 +16,7 @@ PATCH_ASCII  = bytes((0x50, 0x41, 0x54, 0x43, 0x48))
 EOF_ASCII    = bytes((0x45, 0x4f, 0x46))
 EOF_INTEGER  = 4542278
 
-def applyPatch(originalFile, patchFile, newFile):
+async def applyPatch(originalFile, patchFile, newFile):
     """ Apply an IPS patch. Arguments:
         originalFile    String, required, path to the original file.
         patchFile       String, required, path to the patch file (.ips or .gzip).
@@ -115,7 +116,7 @@ def applyPatch(originalFile, patchFile, newFile):
     new.close()
     return (False, 'Patch hadn\'t an EOF flag.')
 
-def createPatch(originalFile, modifiedFile, patchFile):
+async def createPatch(originalFile, modifiedFile, patchFile):
     """ Create an IPS patch. Arguments:
         originalFile    String, required, path to the original file.
         modifiedFile    String, required, path to the modified file. Max 16MB.
@@ -244,69 +245,6 @@ def createPatch(originalFile, modifiedFile, patchFile):
         patch.write(gzip.compress(p))
     
     return (True, 'Success')
-    
-def test() :
-    """ Test applyPatch() and createPatch() """
-
-    testDir = os.path.dirname(os.path.abspath(__file__)) + os.sep + 'test' + os.sep
-
-    #test #1
-    print('\r\nips.py ' + VERSION + '\r\n')
-    print(' --- TEST #1 ips.applyPatch() with normal and RLE records --- \r\n')
-
-    #prepare test
-    o = open(testDir + 'original', 'wb')
-    m = open(testDir + 'modified', 'wb')
-    p = open(testDir + 'patch', 'wb')
-    o.write(b'\x00\x00\x00\x00\x00')
-    m.write(b'\x00\xFF\x00\xFF\xFF')
-    p.write(PATCH_ASCII)
-    p.write(b'\x00\x00\x01\x00\x01\xFF\x00\x00\x03\x00\x00\x00\x02\xFF')
-    p.write(EOF_ASCII)
-    o.close()
-    m.close()
-    p.close()
-
-    #try to patch
-    print('applyPatch() returns :')
-    print(applyPatch(testDir + 'original', testDir + 'patch', testDir + 'generated'))
-
-    #check if generated file is identical to modified file
-    g = open(testDir + 'generated', 'rb').read()
-    m = open(testDir + 'modified', 'rb').read()
-    
-    print('\r\ntest result :')
-    
-    if g == m :
-        print('Patch applied successfully, generated file is identical to what was expected.')
-    else :
-        print('Error: generated file is different from what was expected.')
-        print(g)
-        print(m)
-
-    #test #2
-    print('\r\n --- TEST #2 ips.createPatch() + ips.applyPatch() with gzip --- \r\n')
-
-    #try to create a patch
-    print('creatPatch() returns :')
-    print(createPatch(testDir + 'original', testDir + 'modified', testDir + 'patch_gzip'))
-
-    #try to apply it
-    print('applyPatch() returns :')
-    print(applyPatch(testDir + 'original', testDir + 'patch_gzip', testDir + 'generated'))
-
-    #check if generated file is identical to modified file
-    g = open(testDir + 'generated', 'rb').read()
-    m = open(testDir + 'modified', 'rb').read()
-    
-    print('\r\ntest result :')
-    
-    if g == m :
-        print('Patch applied successfully, generated file is identical to what was expected.')
-    else :
-        print('Error: generated file is different from what was expected.')
-        print(g)
-        print(m)
     
 def main():
     """ It's the command-line interface. """
