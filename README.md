@@ -1,9 +1,11 @@
-ips.py v0.1 
+ips-asyncmod v1.0
 ===========
 A Python 3 module and a CLI program to apply and create IPS patches.
+Forked from ips.py by fbeaudet
 
 __Usage__
 
+__NOTE: CLI Functionality is and will remain untested officially.__
 As a CLI program :
 ```bash
    ips apply path/to/original/file path/to/patch path/to/new/file
@@ -16,9 +18,10 @@ As a CLI program :
 As a Python module :
 ```bash
    import ips
+   import asyncio
 
-   ips.applyPatch(original, patch, newFile)
-   ips.createPatch(original, modified, newPatch)
+   await ips.applyPatch(original, patch, newFile)
+   await ips.createPatch(original, modified, newPatch)
 ```
 
 __What's an IPS patch ?__
@@ -29,9 +32,4 @@ A popular format for retro game ROM hacks
 
 __Tests__
 
-To run the tests :
-```bash
-   ips test
-```
-
-Note that tests passed on Windows 7 and Mac OS X 10.9.2
+The tests have been removed in this version of ips-asyncmod
